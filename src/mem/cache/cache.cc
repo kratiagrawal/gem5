@@ -55,6 +55,7 @@
 #include "mem/cache/cache.hh"
 
 #include <cassert>
+#include <string>
 
 #include "base/compiler.hh"
 #include "base/logging.hh"
@@ -75,6 +76,10 @@ Cache::Cache(const CacheParams *p)
     : BaseCache(p, p->system->cacheLineSize()),
       doFastWrites(true)
 {
+        if (p->name.find("l2")!=std::string::npos) {
+                isL2=1;
+        }
+        else isL2=0;
 }
 
 void

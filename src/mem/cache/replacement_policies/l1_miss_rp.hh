@@ -25,83 +25,93 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * Authors: Daniel Carvalho
+ * Authors: Krati Agrawal
  */
-
-#ifndef __MEM_CACHE_REPLACEMENT_POLICIES_BASE_HH__
-#define __MEM_CACHE_REPLACEMENT_POLICIES_BASE_HH__
-
-#include <memory>
-
-#include "mem/cache/replacement_policies/replaceable_entry.hh"
-#include "params/BaseReplacementPolicy.hh"
-#include "sim/sim_object.hh"
 
 /**
- * Replacement candidates as chosen by the indexing policy.
+ * @file
+ * Declaration of a L1 miss replacement policy.
+ * The victim is chosen using the last touch timestamp.
  */
-typedef std::vector<ReplaceableEntry*> ReplacementCandidates;
 
-/**
- * A common base class of cache replacement policy objects.
- */
-class BaseReplacementPolicy : public SimObject
+#ifndef __MEM_CACHE_REPLACEMENT_POLICIES_L1MISS_RP_HH__
+#define __MEM_CACHE_REPLACEMENT_POLICIES_L1MISS_RP_HH__
+
+#include "mem/cache/replacement_policies/base.hh"
+
+struct L1MISSRPParams;
+
+class L1MISSRP : public BaseReplacementPolicy
 {
+  protected:
+    /** L1MISS-specific implementation of replacement data. */
+    struct L1MISSReplData : ReplacementData
+    {
+        /** Tick on which the entry was last touched. */
+        Tick l1MissTick;
+        bool inL1;
+        /**
+         * Default constructor. Invalidate data.
+         */
+        L1MISSReplData() : l1MissTick(0), inL1(0) {}
+    };
+
   public:
-    /**
-      * Convenience typedef.
-      */
-    typedef BaseReplacementPolicyParams Params;
-    bool isL1MISSRP;
+    /** Convenience typedef. */
+    typedef L1MISSRPParams Params;
+
     /**
      * Construct and initiliaze this replacement policy.
      */
-    BaseReplacementPolicy(const Params *p) : SimObject(p), isL1MISSRP(false) {}
+    L1MISSRP(const Params *p);
 
     /**
      * Destructor.
      */
-    virtual ~BaseReplacementPolicy() {}
+    ~L1MISSRP() {}
 
     /**
      * Invalidate replacement data to set it as the next probable victim.
+     * Sets its last touch tick as the starting tick.
      *
      * @param replacement_data Replacement data to be invalidated.
      */
-    virtual void invalidate(const std::shared_ptr<ReplacementData>&
-                                                replacement_data) const = 0;
+    void invalidate(const std::shared_ptr<ReplacementData>& replacement_data)
+                                                              const override;
 
     /**
-     * Update replacement data.
+     * Touch an entry to update its replacement data.
+     * Sets its last touch tick as the current tick.
      *
      * @param replacement_data Replacement data to be touched.
      */
-    virtual void touch(const std::shared_ptr<ReplacementData>&
-                                                replacement_data) const = 0;
+    void touch(const std::shared_ptr<ReplacementData>& replacement_data) const
+                                                                     override;
 
     /**
-     * Reset replacement data. Used when it's holder is inserted/validated.
+     * Reset replacement data. Used when an entry is inserted.
+     * Sets its last touch tick as the current tick.
      *
      * @param replacement_data Replacement data to be reset.
      */
-    virtual void reset(const std::shared_ptr<ReplacementData>&
-                                                replacement_data) const = 0;
+    void reset(const std::shared_ptr<ReplacementData>& replacement_data) const
+                                                                     override;
 
     /**
-     * Find replacement victim among candidates.
+     * Find replacement victim using LRU timestamps.
      *
      * @param candidates Replacement candidates, selected by indexing policy.
      * @return Replacement entry to be replaced.
      */
-    virtual ReplaceableEntry* getVictim(
-                           const ReplacementCandidates& candidates) const = 0;
+    ReplaceableEntry* getVictim(const ReplacementCandidates& candidates) const
+                                                                     override;
 
     /**
      * Instantiate a replacement data entry.
      *
      * @return A shared pointer to the new replacement data.
      */
-    virtual std::shared_ptr<ReplacementData> instantiateEntry() = 0;
+    std::shared_ptr<ReplacementData> instantiateEntry() override;
 };
 
-#endif // __MEM_CACHE_REPLACEMENT_POLICIES_BASE_HH__
+#endif // __MEM_CACHE_REPLACEMENT_POLICIES_L1MISS_RP_HH__

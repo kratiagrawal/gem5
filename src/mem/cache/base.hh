@@ -93,6 +93,9 @@ struct BaseCacheParams;
  */
 class BaseCache : public ClockedObject
 {
+  public:
+    bool isL2;
+
   protected:
     /**
      * Indexes to enumerate the MSHR queues.
@@ -1065,6 +1068,19 @@ class BaseCache : public ClockedObject
 
     void allocateWriteBuffer(PacketPtr pkt, Tick time)
     {
+        DPRINTF(Cache,"%s with pkt cmd ",__func__);
+        if (pkt->cmd==MemCmd::CleanEvict)
+                DPRINTF(Cache, "Clean evict\n");
+        else if (pkt->cmd==MemCmd::WritebackClean)
+                DPRINTF(Cache, "WB Clean\n");
+        else if (pkt->cmd==MemCmd::WritebackDirty)
+                DPRINTF(Cache, "WB dirty\n");
+        else if (pkt->cmd==MemCmd::WriteClean)
+                DPRINTF(Cache, "Write Clean\n");
+        if (pkt->isEviction())
+                DPRINTF(Cache, "evict\n");
+        if (pkt->isWrite())
+                DPRINTF(Cache, "write\n");
         // should only see writes or clean evicts here
         assert(pkt->isWrite() || pkt->cmd == MemCmd::CleanEvict);
 

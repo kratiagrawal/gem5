@@ -74,6 +74,7 @@ class L2Cache(Cache):
     mshrs = 20
     tgts_per_mshr = 12
     write_buffers = 8
+   # replacement_policy = L1MISSRP()
 
 class IOCache(Cache):
     assoc = 8

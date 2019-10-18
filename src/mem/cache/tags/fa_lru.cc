@@ -138,7 +138,8 @@ FALRU::invalidate(CacheBlk *blk)
 }
 
 CacheBlk*
-FALRU::accessBlock(Addr addr, bool is_secure, Cycles &lat)
+FALRU::accessBlock(Addr addr, bool is_secure,
+Cycles &lat, PacketPtr pkt, bool isL2)
 {
     return accessBlock(addr, is_secure, lat, 0);
 }

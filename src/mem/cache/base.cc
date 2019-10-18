@@ -117,6 +117,10 @@ BaseCache::BaseCache(const BaseCacheParams *p, unsigned blk_size)
     // forward snoops is overridden in init() once we can query
     // whether the connected master is actually snooping or not
 
+        if (p->name.find("l2")!=std::string::npos) {
+                isL2=1;
+        }
+        else isL2=0;
     tempBlock = new TempCacheBlk(blkSize);
 
     tags->tagsInit();
@@ -933,11 +937,16 @@ BaseCache::access(PacketPtr pkt, CacheBlk *&blk, Cycles &lat,
 
     // Access block in the tags
     Cycles tag_latency(0);
-    blk = tags->accessBlock(pkt->getAddr(), pkt->isSecure(), tag_latency);
+    blk = tags->accessBlock(pkt->getAddr(), pkt->isSecure(),
+tag_latency, pkt, isL2);
 
     DPRINTF(Cache, "%s for %s %s\n", __func__, pkt->print(),
             blk ? "hit " + blk->print() : "miss");
 
+    if (isL2 && blk && (pkt->cmd==MemCmd::WritebackDirty ||
+pkt->cmd==MemCmd::CleanEvict)) {   // update repl policy
+        DPRINTF(Cache, "l1 eviction %s in l2\n", __func__);
+    }
     if (pkt->req->isCacheMaintenance()) {
         // A cache maintenance operation is always forwarded to the
         // memory below even if the block is found in dirty state.

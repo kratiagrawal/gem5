@@ -130,7 +130,8 @@ SectorTags::invalidate(CacheBlk *blk)
 }
 
 CacheBlk*
-SectorTags::accessBlock(Addr addr, bool is_secure, Cycles &lat)
+SectorTags::accessBlock(Addr addr, bool is_secure, Cycles &lat,
+PacketPtr pkt, bool isL2)
 {
     CacheBlk *blk = findBlock(addr, is_secure);
 

@@ -68,6 +68,9 @@ class MSHR;
  */
 class Cache : public BaseCache
 {
+  public:
+    bool isL2;
+
   protected:
     /**
      * This cache should allocate a block on a line-sized write miss.
